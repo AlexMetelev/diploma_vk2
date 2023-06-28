@@ -24,24 +24,30 @@ class VkTools:
         try:
             info, = self.vkapi.method('users.get',
                                       {'user_id': user_id,
-                                       'fields': 'city,sex,relation,bdate'
+                                       'fields': 'city,sex,relation,bdate,home_town'
                                        }
                                       )
-            # pprint(info)
         except ApiError as e:
             info = {}
             print(f'error = {e}')
+
+        print('pi')
+        pprint(info)
 
         result = {'name': (info['first_name'] + ' ' + info['last_name']) if
         'first_name' in info and 'last_name' in info else None,
                   'sex': info.get('sex'),
                   'city': info.get('city')['title'] if info.get('city') is not None else None,
-                  'year': self._bdate_toyear(info.get('bdate'))
+                  'home_town': info.get('home_town') if info.get('home_town') is not None else None,
+                  'year': self._bdate_toyear(info.get('bdate')),
+                  'relation': info.get('relation')
                   }
         return result
 
     def search_worksheet(self, params, offset):
         try:
+            pprint(params)
+            pprint(offset)
             users = self.vkapi.method('users.search',
                                       {
                                           'count': 5,
@@ -49,20 +55,22 @@ class VkTools:
                                           'hometown': params['city'],
                                           'sex': 1 if params['sex'] == 2 else 2,
                                           'has_photo': True,
-                                          'age_from': params['year'] - 21,
-                                          'age_to': params['year'] - 1,
+                                          'status': 6,
+                                          'age_from': params['age_from'],
+                                          'age_to': params['age_to'],
                                       }
                                       )
-            # pprint(users['items'])
         except ApiError as e:
             users = []
             print(f'error = {e}')
 
+        # pprint(users)
         result = [{'name': item['first_name'] + ' ' + item['last_name'],
-                   'id': item['id']
+                   'id': item['id'],
                    } for item in users['items'] if item['is_closed'] is False
                   ]
-        # pprint(result)
+        print('sw')
+        pprint(result)
         return result
 
     def get_photos(self, id):
@@ -83,7 +91,11 @@ class VkTools:
                    'comments': item['comments']['count']
                    } for item in photos['items']
                   ]
-        '''сортировка п лайкам и комментам'''
+        # pprint(result)
+        '''сортировка по лайкам и комментам'''
+        result.sort(key=lambda x: x['likes'], reverse=True)
+        # result.sort(key=lambda x: x['likes']+x['comments']*10, reverse=True)
+
         return result[:3]
 
 
