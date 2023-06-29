@@ -82,7 +82,7 @@ class BotInterface():
                               self.params, self.offset)
                         try:
                             worksheet, photo_string = self.take_worksheet(self.worksheets, event.user_id)
-                            self.offset += 10
+                            self.offset += 50
                         except:
                             self.message_send(event.user_id, 'Нет анкет. Попробуйте заново')
                             self.params["city"] = None
